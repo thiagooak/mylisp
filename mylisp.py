@@ -144,14 +144,35 @@ def eval_value(v, env):
   if t == int:
     return v
 
+  if t == str:
+    return v
+
+  if t == list:
+    first = v[0]
+    # rest = v[1:]
+
+    if first == SymDef:
+      # TODO validation
+      name = v[1]
+      value = v[2]
+      env[name] = value
+      return value
+
+    return v
+
+  if t == Symbol:
+    if v in env:
+      return env[v]
+    return SymbolNotFoundError(v)
+
+
   # TBD Add evaluation of strings, symbols, lists, quoted values!
 
   return f'Dont know how to evaluate {v}({t})'
 
 # main program
-
-Env ={Symbol.intern('version'): 100}
-cr = ConsoleReader()
+Env = {Symbol.intern('version'): 100}
+cr  = ConsoleReader()
 
 print(f'MyLISP: I know how to evaluate ints but nothing else.')
 print(f'MyLISP: Make me smarter!')
