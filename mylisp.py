@@ -174,7 +174,7 @@ def eval_value(v, env):
       return value
 
     if type(function) == Symbol: # likely a function, can I do a better check?
-      return env[function](*list(map(lambda p :  eval_value(p, env), params)))
+      return env[function](*map(lambda p :  eval_value(p, env), params))
 
     return params
 
