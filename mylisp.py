@@ -149,19 +149,6 @@ def add(*args):
 
   return result
 
-def resolve(v, env):
-  result = []
-
-  for i in v:
-    if type(i) == Symbol:
-      result.append(env[i])
-    elif type(i) == list:
-      result.append(eval_value(i, env))
-    else:
-      result.append(i)
-
-  return result
-
 def eval_value(v, env):
   t = type(v)
 
@@ -187,7 +174,7 @@ def eval_value(v, env):
       return value
 
     if type(function) == Symbol: # likely a function, can I do a better check?
-      return env[function](*resolve(params, env))
+      return env[function](*list(map(lambda p :  eval_value(p, env), params)))
 
     return params
 
