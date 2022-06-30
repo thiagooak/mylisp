@@ -138,6 +138,30 @@ def repl(env, reader):
       break
     print(eval_value(x, env))
 
+def add(*args):
+  result = 0
+
+  if not args:
+    return result
+
+  for n in args:
+      result += n
+
+  return result
+
+def resolve(v, env):
+  result = []
+
+  for i in v:
+    if type(i) == Symbol:
+      result.append(env[i])
+    elif type(i) == list:
+      result.append(eval_value(i, env))
+    else:
+      result.append(i)
+
+  return result
+
 def eval_value(v, env):
   t = type(v)
 
@@ -147,31 +171,32 @@ def eval_value(v, env):
   if t == str:
     return v
 
-  if t == list:
-    first = v[0]
-    # rest = v[1:]
-
-    if first == SymDef:
-      # TODO validation
-      name = v[1]
-      value = v[2]
-      env[name] = value
-      return value
-
-    return v
-
   if t == Symbol:
     if v in env:
       return env[v]
     return SymbolNotFoundError(v)
 
+  if t == list:
+    function = v[0]
+    params = v[1:]
+
+    if function == SymDef: # TODO validation
+      name = v[1]
+      value = v[2]
+      env[name] = value
+      return value
+
+    if type(function) == Symbol: # likely a function, can I do a better check?
+      return env[function](*resolve(params, env))
+
+    return params
 
   # TBD Add evaluation of strings, symbols, lists, quoted values!
 
-  return f'Dont know how to evaluate {v}({t})'
+  raise Exception(f'Dont know how to evaluate {v}({t})')
 
 # main program
-Env = {Symbol.intern('version'): 100}
+Env = {Symbol.intern('version'): 100, Symbol.intern('add'): add}
 cr  = ConsoleReader()
 
 print(f'MyLISP: I know how to evaluate ints but nothing else.')
