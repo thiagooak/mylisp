@@ -164,19 +164,20 @@ def eval_value(v, env):
     return SymbolNotFoundError(v)
 
   if t == list:
-    function = v[0]
-    params = v[1:]
-
-    if function == SymDef: # TODO validation
+    if v[0] == SymDef:
+      if len(v) != 3:
+        raise Exception(f'Wrong number of args ({len(v)}) passed to: def')
       name = v[1]
       value = v[2]
       env[name] = value
       return value
 
-    if type(function) == Symbol: # likely a function, can I do a better check?
-      return env[function](*map(lambda p :  eval_value(p, env), params))
+    resolved = list(map(lambda p :  eval_value(p, env), v))
 
-    return params
+    function = resolved[0]
+    params = resolved[1:]
+
+    return function(*params)
 
   # TBD Add evaluation of strings, symbols, lists, quoted values!
 
