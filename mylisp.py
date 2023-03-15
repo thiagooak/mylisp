@@ -29,6 +29,7 @@ class Symbol:
 
 SymFn = Symbol.intern('fn')
 SymDef = Symbol.intern('def')
+SymQuo = Symbol.intern('quote')
 
 class SymbolNotFoundError(Exception):
   def __init__(self, symbol, message=None):
@@ -39,10 +40,6 @@ class SymbolNotFoundError(Exception):
 
     self.symbol = symbol
     super().__init__(self.message)
-
-class Quote:
-  def __init__(self, v):
-    self.value = v
 
 class ConsoleReader:
   def __init__(self):
@@ -124,14 +121,14 @@ def read_value(getc):
     return read_list(getc, ch)
 
   if ch == "'":
-    return Quote(read_value(getc))
+    return [SymQuo, read_value(getc)]
 
   if ch == '"':
     return read_string(getc, ch)
 
   return read_sym(getc, ch)
 
-def quote_value(v):
+def to_string(v):
   t = type(v)
 
   if t == int:
@@ -140,16 +137,13 @@ def quote_value(v):
   if t == str:
     return '"' + v + '"'
 
-  if t == Quote:
-    return "'" + v.value.name
-
   if t == Symbol:
     return v.name
 
   if t == list:
     result = []
     for i in v:
-      result.append(quote_value(i))
+      result.append(to_string(i))
     return '(' + ' '.join(result) + ')'
 
 def repl(env, reader):
@@ -157,7 +151,7 @@ def repl(env, reader):
     x = read_value(reader.getc)
     if x == None:
       break
-    print(eval_value(x, env))
+    print(to_string(eval_value(x, env)))
 
 def add(*args):
   result = 0
@@ -179,9 +173,6 @@ def eval_value(v, env):
   if t == str:
     return v
 
-  if t == Quote:
-    return quote_value(v.value)
-
   if t == Symbol:
     if v in env:
       return env[v]
@@ -193,8 +184,11 @@ def eval_value(v, env):
         raise Exception(f'Wrong number of args ({len(v)}) passed to: def')
       name = v[1]
       value = v[2]
-      env[name] = value
+      env[name] = eval_value(value, env)
       return value
+
+    if v[0] == SymQuo:
+      return v[1]
 
     resolved = list(map(lambda p :  eval_value(p, env), v))
 
@@ -203,12 +197,13 @@ def eval_value(v, env):
 
     return function(*params)
 
-  # TBD Add evaluation of strings, symbols, lists, quoted values!
+  # @TODO eval
+  # @TODO let
 
   raise Exception(f'Dont know how to evaluate {v}({t})')
 
 # main program
-Env = {Symbol.intern('version'): 100, Symbol.intern('add'): add}
+Env = {Symbol.intern('version'): 100, Symbol.intern('add'): add, Symbol.intern('str'): to_string}
 cr  = ConsoleReader()
 
 print(f'MyLISP: I know how to evaluate ints but nothing else.')
