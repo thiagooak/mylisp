@@ -131,6 +131,27 @@ def read_value(getc):
 
   return read_sym(getc, ch)
 
+def quote_value(v):
+  t = type(v)
+
+  if t == int:
+    return str(v)
+
+  if t == str:
+    return '"' + v + '"'
+
+  if t == Quote:
+    return "'" + v.value.name
+
+  if t == Symbol:
+    return v.name
+
+  if t == list:
+    result = []
+    for i in v:
+      result.append(quote_value(i))
+    return '(' + ' '.join(result) + ')'
+
 def repl(env, reader):
   while True:
     x = read_value(reader.getc)
@@ -157,6 +178,9 @@ def eval_value(v, env):
 
   if t == str:
     return v
+
+  if t == Quote:
+    return quote_value(v.value)
 
   if t == Symbol:
     if v in env:
