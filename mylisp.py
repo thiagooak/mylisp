@@ -197,7 +197,15 @@ def eval_value(v, env):
 
     return function(*params)
 
-  # @TODO eval
+  # @TODO
+  # read — reads a lisp expression from the terminal
+  # eval — we already talked about this
+  # print — prints a lisp expression to the terminal
+  # loop — takes an expression and evaluates it over and over, endlessly.
+  #
+  # we are trying to get to the point where we can write something like this:
+  # (loop (print(eval(read))))
+  #
   # @TODO let
 
   raise Exception(f'Dont know how to evaluate {v}({t})')
