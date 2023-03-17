@@ -109,14 +109,14 @@ def eval_value(v, env):
             return loop(env, v[1])
 
         if v[0] == SymLet:
-            # implement reader for vectors
-            # add v[1] to a copy of env
-            # call v[2] with the new env
-            # should this be a loop on v[2:]?
-            print("v", v)
-            print("1", v[1])
-            print("2", v[2])
-            return eval_value(v[2], env)
+            local_env = {}
+            local_env.update(env)
+
+            for i in range(0, len(v[1]), 2):
+                local_env[v[1][i]] = v[1][i+1]
+
+            # @TODO v[2:]
+            return eval_value(v[2], local_env)
 
         resolved = list(map(lambda p:  eval_value(p, env), v))
 
@@ -124,17 +124,6 @@ def eval_value(v, env):
         params = resolved[1:]
 
         return function(env, *params)
-
-    # @TODO
-    # read — reads a lisp expression from the terminal
-    # eval — we already talked about this
-    # print — prints a lisp expression to the terminal
-    # loop — takes an expression and evaluates it over and over, endlessly.
-    #
-    # we are trying to get to the point where we can write something like this:
-    # (loop (print(eval(read))))
-    #
-    # @TODO let
 
     raise Exception(f'Dont know how to evaluate {v}({t})')
 

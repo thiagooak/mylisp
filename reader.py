@@ -89,6 +89,17 @@ def read_list(getc, ch):
     return result
 
 
+def read_vector(getc, ch):
+    result = []
+    ch = getc()
+    while ch and (ch != ']'):
+        getc(ch)
+        value = read_value(getc)
+        result.append(value)
+        ch = getc()
+    return result
+
+
 def read_value(getc):
     result = None
 
@@ -104,6 +115,9 @@ def read_value(getc):
 
     if ch == '(':
         return read_list(getc, ch)
+
+    if ch == '[':
+        return read_vector(getc, ch)
 
     if ch == "'":
         return [SymQuote, read_value(getc)]
