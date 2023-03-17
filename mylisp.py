@@ -8,6 +8,7 @@ from reader import ConsoleReader, read_value, SymQuote
 
 SymFn = Symbol.intern('fn')
 SymDef = Symbol.intern('def')
+SymLoop = Symbol.intern('loop')
 
 
 def to_string(v):
@@ -29,6 +30,28 @@ def to_string(v):
         return '(' + ' '.join(result) + ')'
 
 
+def read(env):
+    reader = ConsoleReader()
+    while True:
+        x = read_value(reader.getc)
+        if x == None:
+            break
+        return x
+
+
+def eval(env, v):
+    return eval_value(v, env)
+
+
+def print_me(env, v):
+    print(to_string(v))
+
+
+def loop(env, v):
+    while True:
+        (eval_value(v, env))
+
+
 def repl(env, reader):
     while True:
         x = read_value(reader.getc)
@@ -37,7 +60,7 @@ def repl(env, reader):
         print(to_string(eval_value(x, env)))
 
 
-def add(*args):
+def add(env, *args):
     result = 0
 
     if not args:
@@ -76,12 +99,15 @@ def eval_value(v, env):
         if v[0] == SymQuote:
             return v[1]
 
+        if v[0] == SymLoop:
+            return loop(env, v[1])
+
         resolved = list(map(lambda p:  eval_value(p, env), v))
 
         function = resolved[0]
         params = resolved[1:]
 
-        return function(*params)
+        return function(env, *params)
 
     # @TODO
     # read — reads a lisp expression from the terminal
@@ -98,17 +124,17 @@ def eval_value(v, env):
 
 
 Env = {Symbol.intern('version'): 100, Symbol.intern(
-    'add'): add, Symbol.intern('str'): to_string}
+    'add'): add, Symbol.intern('read'): read, Symbol.intern('eval'): eval, Symbol.intern('print'): print_me}
 
 
 def main() -> int:
     cr = ConsoleReader()
 
-    print(f'MyLISP: I know how to evaluate ints but nothing else.')
+    print(f'MyLISP: I know how to evaluate a few things.')
     print(f'MyLISP: Make me smarter!')
     repl(Env, cr)
     return 0
 
 
 if __name__ == '__main__':
-    sys.exit(main())  # next section explains the use of sys.exit
+    sys.exit(main())
