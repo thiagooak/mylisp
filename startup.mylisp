@@ -1,0 +1,3 @@
+"MyLISP: I know how to evaluate a few things."
+"MyLISP: Make me smarter!"
+(loop (print (eval (read))))

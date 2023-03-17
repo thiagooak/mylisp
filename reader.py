@@ -5,11 +5,7 @@ from sym import Symbol
 SymQuote = Symbol.intern('quote')
 
 
-class ConsoleReader:
-    def __init__(self):
-        self.buffer = ''
-        self.pushed = None
-
+class Reader:
     def getc(self, ch=None):
         if (ch):
             self.pushed = ch
@@ -21,7 +17,7 @@ class ConsoleReader:
             return result
 
         while len(self.buffer) < 1:
-            self.buffer = input('>> ')
+            self.buffer = self.read_line()
             if self.buffer == '':
                 return None
             self.buffer += "\n"
@@ -29,6 +25,26 @@ class ConsoleReader:
         result = self.buffer[0]
         self.buffer = self.buffer[1:]
         return result
+
+
+class FileReader(Reader):
+    def __init__(self, path):
+        self.buffer = ''
+        self.pushed = None
+        self.f = open(path)
+
+    def read_line(self):
+        return self.f.readline()
+
+
+class ConsoleReader(Reader):
+    def __init__(self, prompt='>> '):
+        self.buffer = ''
+        self.pushed = None
+        self.prompt = prompt
+
+    def read_line(self):
+        return input(self.prompt)
 
 
 def read_number(getc, digit):

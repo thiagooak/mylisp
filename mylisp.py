@@ -4,7 +4,7 @@ import sys
 import re
 import readline
 from sym import Symbol, SymbolNotFoundError
-from reader import ConsoleReader, read_value, SymQuote
+from reader import ConsoleReader, FileReader, read_value, SymQuote
 
 SymFn = Symbol.intern('fn')
 SymDef = Symbol.intern('def')
@@ -30,8 +30,13 @@ def to_string(v):
         return '(' + ' '.join(result) + ')'
 
 
+def source(env, path):
+    reader = FileReader(path)
+    repl(env, reader)
+
+
 def read(env):
-    reader = ConsoleReader()
+    reader = ConsoleReader(prompt='> ')
     while True:
         x = read_value(reader.getc)
         if x == None:
@@ -128,11 +133,12 @@ Env = {Symbol.intern('version'): 100, Symbol.intern(
 
 
 def main() -> int:
-    cr = ConsoleReader()
+    if (len(sys.argv) == 2):
+        source(Env, sys.argv[1])
+        return 0
 
-    print(f'MyLISP: I know how to evaluate a few things.')
-    print(f'MyLISP: Make me smarter!')
-    repl(Env, cr)
+    source(Env, "./startup.mylisp")
+
     return 0
 
 
