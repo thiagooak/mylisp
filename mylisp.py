@@ -9,6 +9,7 @@ from reader import ConsoleReader, read_value, SymQuote
 SymFn = Symbol.intern('fn')
 SymDef = Symbol.intern('def')
 SymLoop = Symbol.intern('loop')
+SymLet = Symbol.intern('let')
 
 
 def to_string(v):
@@ -101,6 +102,16 @@ def eval_value(v, env):
 
         if v[0] == SymLoop:
             return loop(env, v[1])
+
+        if v[0] == SymLet:
+            # implement reader for vectors
+            # add v[1] to a copy of env
+            # call v[2] with the new env
+            # should this be a loop on v[2:]?
+            print("v", v)
+            print("1", v[1])
+            print("2", v[2])
+            return eval_value(v[2], env)
 
         resolved = list(map(lambda p:  eval_value(p, env), v))
 
