@@ -115,8 +115,10 @@ def eval_value(v, env):
             for i in range(0, len(v[1]), 2):
                 local_env[v[1][i]] = v[1][i+1]
 
-            # @TODO v[2:]
-            return eval_value(v[2], local_env)
+            results = []
+            for i in range(2, len(v)):
+                results.append(eval_value(v[i], local_env))
+            return results[-1]
 
         resolved = list(map(lambda p:  eval_value(p, env), v))
 
