@@ -10,8 +10,10 @@ def read_history():
     if path.isfile('.tlisp.history'):
         readline.read_history_file('.tlisp.history')
 
+
 def write_history():
     readline.write_history_file('.tlisp.history')
+
 
 class Reader:
     def __init__(self):
@@ -27,7 +29,7 @@ class Reader:
             n = self.read_number(ch)
             return factor * n
         self.getc(ch)
-        return self.read_sym(sign)        
+        return self.read_sym(sign)
 
     def read_number(self, digit):
         s = digit
@@ -75,14 +77,13 @@ class Reader:
             ch = self.getc()
         return result
 
-
     def read_value(self):
         result = None
         self.skip_ws()
         ch = self.getc()
 
         if ch == None:
-            return sym.SymEOF
+            return None  # @TODO correctly
 
         if ch in ['+', '-']:
             return self.read_signed(ch)
@@ -104,12 +105,13 @@ class Reader:
 
         return self.read_sym(ch)
 
+
 class ConsoleReader(Reader):
     def read_history():
         print("reading history")
         if path.isfile('.tlisp.history'):
             readline.read_history_file('.tlisp.history')
-    
+
     def write_history():
         print("writing history")
         readline.write_history_file('.tlisp.history')

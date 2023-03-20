@@ -7,6 +7,7 @@ import sym
 import reader as r
 import interop
 
+
 def to_string(v):
     t = type(v)
 
@@ -78,6 +79,10 @@ def add(env, *args):
     return result
 
 
+def equal(env, first, second):
+    return first == second
+
+
 def eval_value(env, v):
     t = type(v)
 
@@ -117,6 +122,16 @@ def eval_value(env, v):
 
             return implicit_do(local_env, v[2:])
 
+        if v[0] == sym.SymIf:
+            if (len(v) != 4):
+                raise Exception(
+                    f'Wrong number of args ({len(v)}) passed to: if')
+
+            if eval_value(env, v[1]):
+                return eval_value(env, v[2])
+
+            return eval_value(env, v[3])
+
         resolved = list(map(lambda p:  eval_value(env, p), v))
 
         function = resolved[0]
@@ -126,19 +141,23 @@ def eval_value(env, v):
 
     raise Exception(f'Dont know how to evaluate {v}({t})')
 
+
 def setenv(env, name, value):
     if isinstance(name, str):
         name = sym.Symbol.intern(name)
     env[name] = value
 
+
 Env = {}
 setenv(Env, '+', add)
+setenv(Env, '=', equal)
 setenv(Env, 'read', read)
 setenv(Env, 'eval', eval_value)
 setenv(Env, 'print', print_me)
 setenv(Env, 'import', interop.do_import)
 setenv(Env, '!', interop.bang)
 setenv(Env, '.', interop.dot)
+
 
 def main() -> int:
     if (len(sys.argv) == 2):
