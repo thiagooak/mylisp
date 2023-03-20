@@ -3,13 +3,9 @@
 import sys
 import re
 import readline
-from sym import Symbol, SymbolNotFoundError
-from reader import ConsoleReader, FileReader, read_value, SymQuote
-
-SymFn = Symbol.intern('fn')
-SymDef = Symbol.intern('def')
-SymLoop = Symbol.intern('loop')
-
+import sym
+import reader as r
+import interop
 
 def to_string(v):
     t = type(v)
@@ -20,7 +16,7 @@ def to_string(v):
     if t == str:
         return '"' + v + '"'
 
-    if t == Symbol:
+    if t == sym.Symbol:
         return v.name
 
     if t == list:
@@ -29,23 +25,21 @@ def to_string(v):
             result.append(to_string(i))
         return '(' + ' '.join(result) + ')'
 
+    return str(v)
+
 
 def source(env, path):
-    reader = FileReader(path)
+    reader = r.FileReader(path)
     repl(env, reader)
 
 
 def read(env):
-    reader = ConsoleReader(prompt='> ')
+    reader = r.ConsoleReader(prompt='> ')
     while True:
-        x = read_value(reader.getc)
+        x = reader.read_value()
         if x == None:
             break
         return x
-
-
-def eval(env, v):
-    return eval_value(v, env)
 
 
 def print_me(env, v):
@@ -54,15 +48,22 @@ def print_me(env, v):
 
 def loop(env, v):
     while True:
-        (eval_value(v, env))
+        (eval_value(env, v))
 
 
 def repl(env, reader):
     while True:
-        x = read_value(reader.getc)
+        x = reader.read_value()
         if x == None:
             break
-        print(to_string(eval_value(x, env)))
+        print(to_string(eval_value(env, x)))
+
+
+def implicit_do(env, exprs):
+    result = None
+    for i in range(len(exprs)):
+        result = eval_value(env, exprs[i])
+    return result
 
 
 def add(env, *args):
@@ -77,7 +78,7 @@ def add(env, *args):
     return result
 
 
-def eval_value(v, env):
+def eval_value(env, v):
     t = type(v)
 
     if t == int:
@@ -86,51 +87,58 @@ def eval_value(v, env):
     if t == str:
         return v
 
-    if t == Symbol:
+    if t == sym.Symbol:
         if v in env:
             return env[v]
-        return SymbolNotFoundError(v)
+        return sym.SymbolNotFoundError(v)
 
     if t == list:
-        if v[0] == SymDef:
+        if v[0] == sym.SymDef:
             if len(v) != 3:
                 raise Exception(
                     f'Wrong number of args ({len(v)}) passed to: def')
             name = v[1]
             value = v[2]
-            env[name] = eval_value(value, env)
+            env[name] = eval_value(env, value)
             return value
 
-        if v[0] == SymQuote:
+        if v[0] == sym.SymQuote:
             return v[1]
 
-        if v[0] == SymLoop:
+        if v[0] == sym.SymLoop:
             return loop(env, v[1])
 
-        resolved = list(map(lambda p:  eval_value(p, env), v))
+        if v[0] == sym.SymLet:
+            local_env = {}
+            local_env.update(env)
+
+            for i in range(0, len(v[1]), 2):
+                local_env[v[1][i]] = eval_value(local_env, v[1][i+1])
+
+            return implicit_do(local_env, v[2:])
+
+        resolved = list(map(lambda p:  eval_value(env, p), v))
 
         function = resolved[0]
         params = resolved[1:]
 
         return function(env, *params)
 
-    # @TODO
-    # read — reads a lisp expression from the terminal
-    # eval — we already talked about this
-    # print — prints a lisp expression to the terminal
-    # loop — takes an expression and evaluates it over and over, endlessly.
-    #
-    # we are trying to get to the point where we can write something like this:
-    # (loop (print(eval(read))))
-    #
-    # @TODO let
-
     raise Exception(f'Dont know how to evaluate {v}({t})')
 
+def setenv(env, name, value):
+    if isinstance(name, str):
+        name = sym.Symbol.intern(name)
+    env[name] = value
 
-Env = {Symbol.intern('version'): 100, Symbol.intern(
-    'add'): add, Symbol.intern('read'): read, Symbol.intern('eval'): eval, Symbol.intern('print'): print_me}
-
+Env = {}
+setenv(Env, '+', add)
+setenv(Env, 'read', read)
+setenv(Env, 'eval', eval_value)
+setenv(Env, 'print', print_me)
+setenv(Env, 'import', interop.do_import)
+setenv(Env, '!', interop.bang)
+setenv(Env, '.', interop.dot)
 
 def main() -> int:
     if (len(sys.argv) == 2):

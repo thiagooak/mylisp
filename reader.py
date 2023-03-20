@@ -1,11 +1,127 @@
-
 import re
-from sym import Symbol
+import sys
+import readline
+import os.path as path
+import atexit
+import sym
 
-SymQuote = Symbol.intern('quote')
 
+def read_history():
+    if path.isfile('.tlisp.history'):
+        readline.read_history_file('.tlisp.history')
+
+def write_history():
+    readline.write_history_file('.tlisp.history')
 
 class Reader:
+    def __init__(self):
+        self.buffer = ''
+        self.pushed = None
+
+    def read_signed(self, sign):
+        factor = 1
+        if sign == '-':
+            factor = -1
+        ch = self.getc()
+        if ch.isdigit():
+            n = self.read_number(ch)
+            return factor * n
+        self.getc(ch)
+        return self.read_sym(sign)        
+
+    def read_number(self, digit):
+        s = digit
+        ch = self.getc()
+        while ch and ch.isdigit():
+            s += ch
+            ch = self.getc()
+        self.getc(ch)
+        return int(s)
+
+    def read_sym(self, ch):
+        result = ch
+        ch = self.getc()
+        while ch and (not ch.isspace()):
+            if ch == '(' or ch == ')' or ch == "\n":
+                break
+            result += ch
+            ch = self.getc()
+        self.getc(ch)
+        return sym.Symbol(result)
+
+    def read_string(self, ch):
+        result = ''
+        ch = self.getc()
+        while ch and (ch != '"'):
+            result += ch
+            ch = self.getc()
+        return result
+
+    def skip_ws(self):
+        ch = self.getc()
+        while ch and ch.isspace():
+            ch = self.getc()
+        self.getc(ch)
+
+    def read_collection(self, end_ch):
+        result = []
+        self.skip_ws()
+        ch = self.getc()
+        while ch and (ch != end_ch):
+            self.getc(ch)
+            value = self.read_value()
+            result.append(value)
+            self.skip_ws()
+            ch = self.getc()
+        return result
+
+
+    def read_value(self):
+        result = None
+        self.skip_ws()
+        ch = self.getc()
+
+        if ch == None:
+            return sym.SymEOF
+
+        if ch in ['+', '-']:
+            return self.read_signed(ch)
+
+        if re.fullmatch(r'[0-9-]', ch):
+            return self.read_number(ch)
+
+        if ch == '(':
+            return self.read_collection(')')
+
+        if ch == '[':
+            return self.read_collection(']')
+
+        if ch == "'":
+            return [sym.SymQuote, self.read_value()]
+
+        if ch == '"':
+            return self.read_string(ch)
+
+        return self.read_sym(ch)
+
+class ConsoleReader(Reader):
+    def read_history():
+        print("reading history")
+        if path.isfile('.tlisp.history'):
+            readline.read_history_file('.tlisp.history')
+    
+    def write_history():
+        print("writing history")
+        readline.write_history_file('.tlisp.history')
+
+    def init_history(env):
+        read_history()
+        atexit.register(write_history)
+
+    def __init__(self, prompt='>> '):
+        super().__init__()
+        self.prompt = prompt
+
     def getc(self, ch=None):
         if (ch):
             self.pushed = ch
@@ -17,9 +133,7 @@ class Reader:
             return result
 
         while len(self.buffer) < 1:
-            self.buffer = self.read_line()
-            if self.buffer == '':
-                return None
+            self.buffer = input(self.prompt)
             self.buffer += "\n"
 
         result = self.buffer[0]
@@ -29,86 +143,24 @@ class Reader:
 
 class FileReader(Reader):
     def __init__(self, path):
-        self.buffer = ''
-        self.pushed = None
+        super().__init__()
         self.f = open(path)
 
-    def read_line(self):
-        return self.f.readline()
+    def getc(self, ch=None):
+        if (ch):
+            self.pushed = ch
+            return None
 
+        if self.pushed:
+            result = self.pushed
+            self.pushed = None
+            return result
 
-class ConsoleReader(Reader):
-    def __init__(self, prompt='>> '):
-        self.buffer = ''
-        self.pushed = None
-        self.prompt = prompt
+        while len(self.buffer) < 1:
+            self.buffer = self.f.readline()
+            if self.buffer == '':
+                return None
 
-    def read_line(self):
-        return input(self.prompt)
-
-
-def read_number(getc, digit):
-    s = digit
-    ch = getc()
-    while ch and ch.isdigit():
-        s += ch
-        ch = getc()
-    getc(ch)
-    return int(s)
-
-
-def read_sym(getc, ch):
-    result = ch
-    ch = getc()
-    while ch and (not ch.isspace()):
-        if ch == '(' or ch == ')' or ch == "\n":
-            break
-        result += ch
-        ch = getc()
-    getc(ch)
-    return Symbol(result)
-
-
-def read_string(getc, ch):
-    result = ''
-    ch = getc()
-    while ch and (ch != '"'):
-        result += ch
-        ch = getc()
-    return result
-
-
-def read_list(getc, ch):
-    result = []
-    ch = getc()
-    while ch and (ch != ')'):
-        getc(ch)
-        value = read_value(getc)
-        result.append(value)
-        ch = getc()
-    return result
-
-
-def read_value(getc):
-    result = None
-
-    ch = getc()
-    while ch and ch.isspace():
-        ch = getc()
-
-    if ch == None:
-        return ch
-
-    if re.fullmatch(r'[0-9+-]', ch):
-        return read_number(getc, ch)
-
-    if ch == '(':
-        return read_list(getc, ch)
-
-    if ch == "'":
-        return [SymQuote, read_value(getc)]
-
-    if ch == '"':
-        return read_string(getc, ch)
-
-    return read_sym(getc, ch)
+        result = self.buffer[0]
+        self.buffer = self.buffer[1:]
+        return result
