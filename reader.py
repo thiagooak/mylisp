@@ -63,17 +63,18 @@ class Reader:
             ch = self.getc()
         self.getc(ch)
 
-    def read_list(self, ch):
+    def read_collection(self, end_ch):
         result = []
         self.skip_ws()
         ch = self.getc()
-        while ch and (ch != ')'):
+        while ch and (ch != end_ch):
             self.getc(ch)
             value = self.read_value()
             result.append(value)
             self.skip_ws()
             ch = self.getc()
         return result
+
 
     def read_value(self):
         result = None
@@ -90,7 +91,10 @@ class Reader:
             return self.read_number(ch)
 
         if ch == '(':
-            return self.read_list(ch)
+            return self.read_collection(')')
+
+        if ch == '[':
+            return self.read_collection(']')
 
         if ch == "'":
             return [sym.SymQuote, self.read_value()]
