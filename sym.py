@@ -33,3 +33,12 @@ class SymbolNotFoundError(Exception):
 
         self.symbol = symbol
         super().__init__(self.message)
+
+
+SymFn = Symbol.intern('fn')
+SymDef = Symbol.intern('def')
+SymLoop = Symbol.intern('loop')
+SymLet = Symbol.intern('let')
+SymQuote = Symbol.intern('quote')
+
+

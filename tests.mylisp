@@ -1,2 +1,2 @@
-(let [version 2 b 1] (add version b) (add b 3) (add b b))
-(let [a 10 b (add a 1)] b)
+(let [version 2 b 1] (+ version b) (+ b 3) (+ b b))
+(let [a 10 b (+ a 1)] b)

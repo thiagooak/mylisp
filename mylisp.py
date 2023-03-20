@@ -3,14 +3,8 @@
 import sys
 import re
 import readline
-from sym import Symbol, SymbolNotFoundError
-from reader import ConsoleReader, FileReader, read_value, SymQuote
-
-SymFn = Symbol.intern('fn')
-SymDef = Symbol.intern('def')
-SymLoop = Symbol.intern('loop')
-SymLet = Symbol.intern('let')
-
+import sym
+import reader as r
 
 def to_string(v):
     t = type(v)
@@ -32,14 +26,14 @@ def to_string(v):
 
 
 def source(env, path):
-    reader = FileReader(path)
+    reader = r.FileReader(path)
     repl(env, reader)
 
 
 def read(env):
-    reader = ConsoleReader(prompt='> ')
+    reader = r.ConsoleReader(prompt='> ')
     while True:
-        x = read_value(reader.getc)
+        x = reader.read_value()
         if x == None:
             break
         return x
@@ -56,7 +50,7 @@ def loop(env, v):
 
 def repl(env, reader):
     while True:
-        x = read_value(reader.getc)
+        x = reader.read_value()
         if x == None:
             break
         print(to_string(eval_value(env, x)))
@@ -90,13 +84,13 @@ def eval_value(env, v):
     if t == str:
         return v
 
-    if t == Symbol:
+    if t == sym.Symbol:
         if v in env:
             return env[v]
-        return SymbolNotFoundError(v)
+        return sym.SymbolNotFoundError(v)
 
     if t == list:
-        if v[0] == SymDef:
+        if v[0] == sym.SymDef:
             if len(v) != 3:
                 raise Exception(
                     f'Wrong number of args ({len(v)}) passed to: def')
@@ -105,13 +99,13 @@ def eval_value(env, v):
             env[name] = eval_value(env, value)
             return value
 
-        if v[0] == SymQuote:
+        if v[0] == sym.SymQuote:
             return v[1]
 
-        if v[0] == SymLoop:
+        if v[0] == sym.SymLoop:
             return loop(env, v[1])
 
-        if v[0] == SymLet:
+        if v[0] == sym.SymLet:
             local_env = {}
             local_env.update(env)
 
@@ -129,10 +123,20 @@ def eval_value(env, v):
 
     raise Exception(f'Dont know how to evaluate {v}({t})')
 
+def setenv(env, name, value):
+    if isinstance(name, str):
+        name = sym.Symbol.intern(name)
+    env[name] = value
 
-Env = {Symbol.intern('version'): 100, Symbol.intern(
-    'add'): add, Symbol.intern('read'): read, Symbol.intern('eval'): eval_value, Symbol.intern('print'): print_me}
+#Env = {Symbol.intern('version'): 100, Symbol.intern(
+#'add'): add, Symbol.intern('read'): read, Symbol.intern('eval'): eval_value, Symbol.intern('print'): print_me}
 
+Env = {}
+setenv(Env, '+', add)
+setenv(Env, 'read', read)
+setenv(Env, 'eval', eval_value)
+setenv(Env, 'print', print_me)
+#setenv(Env, 'init-history', r.ConsoleReader.init_history)
 
 def main() -> int:
     if (len(sys.argv) == 2):
