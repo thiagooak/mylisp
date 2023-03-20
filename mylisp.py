@@ -5,6 +5,7 @@ import re
 import readline
 import sym
 import reader as r
+import interop
 
 def to_string(v):
     t = type(v)
@@ -15,7 +16,7 @@ def to_string(v):
     if t == str:
         return '"' + v + '"'
 
-    if t == Symbol:
+    if t == sym.Symbol:
         return v.name
 
     if t == list:
@@ -23,6 +24,8 @@ def to_string(v):
         for i in v:
             result.append(to_string(i))
         return '(' + ' '.join(result) + ')'
+
+    return str(v)
 
 
 def source(env, path):
@@ -128,15 +131,14 @@ def setenv(env, name, value):
         name = sym.Symbol.intern(name)
     env[name] = value
 
-#Env = {Symbol.intern('version'): 100, Symbol.intern(
-#'add'): add, Symbol.intern('read'): read, Symbol.intern('eval'): eval_value, Symbol.intern('print'): print_me}
-
 Env = {}
 setenv(Env, '+', add)
 setenv(Env, 'read', read)
 setenv(Env, 'eval', eval_value)
 setenv(Env, 'print', print_me)
-#setenv(Env, 'init-history', r.ConsoleReader.init_history)
+setenv(Env, 'import', interop.do_import)
+setenv(Env, '!', interop.bang)
+setenv(Env, '.', interop.dot)
 
 def main() -> int:
     if (len(sys.argv) == 2):
