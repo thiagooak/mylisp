@@ -130,8 +130,13 @@ def eval_value(env, v):
     raise Exception(f'Dont know how to evaluate {v}({t})')
 
 
-Env = {Symbol.intern('version'): 100, Symbol.intern(
-    'add'): add, Symbol.intern('read'): read, Symbol.intern('eval'): eval_value, Symbol.intern('print'): print_me}
+Env = {
+    Symbol.intern('version'): 100,
+    Symbol.intern('add'): add,
+    Symbol.intern('eval'): eval_value,
+    Symbol.intern('print'): print_me,
+    Symbol.intern('read'): read,
+}
 
 
 def main() -> int:
