@@ -45,17 +45,13 @@ def read(env):
         return x
 
 
-def eval(env, v):
-    return eval_value(v, env)
-
-
 def print_me(env, v):
     print(to_string(v))
 
 
 def loop(env, v):
     while True:
-        (eval_value(v, env))
+        (eval_value(env, v))
 
 
 def repl(env, reader):
@@ -63,7 +59,14 @@ def repl(env, reader):
         x = read_value(reader.getc)
         if x == None:
             break
-        print(to_string(eval_value(x, env)))
+        print(to_string(eval_value(env, x)))
+
+
+def implicit_do(env, exprs):
+    result = None
+    for i in range(len(exprs)):
+        result = eval_value(env, exprs[i])
+    return result
 
 
 def add(env, *args):
@@ -78,7 +81,7 @@ def add(env, *args):
     return result
 
 
-def eval_value(v, env):
+def eval_value(env, v):
     t = type(v)
 
     if t == int:
@@ -99,7 +102,7 @@ def eval_value(v, env):
                     f'Wrong number of args ({len(v)}) passed to: def')
             name = v[1]
             value = v[2]
-            env[name] = eval_value(value, env)
+            env[name] = eval_value(env, value)
             return value
 
         if v[0] == SymQuote:
@@ -113,14 +116,11 @@ def eval_value(v, env):
             local_env.update(env)
 
             for i in range(0, len(v[1]), 2):
-                local_env[v[1][i]] = v[1][i+1]
+                local_env[v[1][i]] = eval_value(local_env, v[1][i+1])
 
-            results = []
-            for i in range(2, len(v)):
-                results.append(eval_value(v[i], local_env))
-            return results[-1]
+            return implicit_do(local_env, v[2:])
 
-        resolved = list(map(lambda p:  eval_value(p, env), v))
+        resolved = list(map(lambda p:  eval_value(env, p), v))
 
         function = resolved[0]
         params = resolved[1:]
@@ -131,7 +131,7 @@ def eval_value(v, env):
 
 
 Env = {Symbol.intern('version'): 100, Symbol.intern(
-    'add'): add, Symbol.intern('read'): read, Symbol.intern('eval'): eval, Symbol.intern('print'): print_me}
+    'add'): add, Symbol.intern('read'): read, Symbol.intern('eval'): eval_value, Symbol.intern('print'): print_me}
 
 
 def main() -> int:
