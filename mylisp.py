@@ -1,8 +1,6 @@
 #!python3
 
 import sys
-import re
-import readline
 import sym
 import reader as r
 import interop
@@ -101,6 +99,20 @@ def equal(env, *args):
     return True
 
 
+class Lambda():
+    def __init__(self, env, params, body):
+        self.env = env
+        self.params = params
+        self.body = body
+
+    def __call__(self, env, *args):
+        let_params = []
+        for i in range(len(args)):
+            let_params.append(self.params[i])
+            let_params.append(args[i])
+        return eval_value(self.env, [sym.SymLet, let_params, self.body])
+
+
 def eval_value(env, v):
     t = type(v)
 
@@ -153,6 +165,9 @@ def eval_value(env, v):
                     return result
             return None
 
+        if v[0] == sym.SymLambda:
+            return Lambda(env, v[1], v[2])
+
         resolved = list(map(lambda p:  eval_value(env, p), v))
 
         function = resolved[0]
@@ -186,7 +201,6 @@ def main() -> int:
         return 0
 
     source(Env, "./startup.mylisp")
-
     return 0
 
 
