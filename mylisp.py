@@ -47,6 +47,16 @@ def print_me(env, v):
     print(to_string(v))
 
 
+def if_me(env, test, then, otherwise=None):
+    if eval_value(env, test):
+        return eval_value(env, then)
+
+    if otherwise:
+        return eval_value(env, otherwise)
+
+    return None
+
+
 def loop(env, v):
     while True:
         (eval_value(env, v))
@@ -131,19 +141,16 @@ def eval_value(env, v):
             return implicit_do(local_env, v[2:])
 
         if v[0] == sym.SymIf:
-            if (len(v) != 4):
+            if (len(v) != 3 and len(v) != 4):
                 raise Exception(
                     f'Wrong number of args ({len(v)}) passed to: if')
-
-            if eval_value(env, v[1]):
-                return eval_value(env, v[2])
-
-            return eval_value(env, v[3])
+            return if_me(env, *v[1:])
 
         if v[0] == sym.SymCond:
             for i in range(1, len(v), 2):
-                if (eval_value(env, v[i])):
-                    return eval_value(env, v[i+1])
+                result = if_me(env, v[i], v[i+1])
+                if result:
+                    return result
             return None
 
         resolved = list(map(lambda p:  eval_value(env, p), v))
