@@ -80,18 +80,15 @@ def add(env, *args):
 
 
 def equal(env, *args):
-    result = True
-
     if not args:
-        return result
+        return True
 
     first = args[0]
     for i in range(1, len(args)):
-        result = first == args[i]
-        if not result:
-            return result
+        if first != args[i]:
+            return False
 
-    return result
+    return True
 
 
 def eval_value(env, v):
