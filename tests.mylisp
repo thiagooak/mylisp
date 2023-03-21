@@ -1,2 +1,15 @@
-(let [version 2 b 1] (+ version b) (+ b 3) (+ b b))
-(let [a 10 b (+ a 1)] b)
+(if (= 1 1) (+ 1 99))
+(if (= 0 1) (+ 1 10) (+ 1 99))
+
+(= 1 1 1 1)
+(= 1 2 1 1)
+(= 1 1 2 1)
+(= (+ 1 1) 2 2 2)
+
+(let (grade 0)
+    (cond
+        (= grade 90) "A"
+        (= grade 80) "B"
+        (= grade 70) "C"
+        (= grade 60) "D"
+        true (+ 99 1)))

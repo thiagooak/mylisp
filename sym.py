@@ -40,5 +40,5 @@ SymDef = Symbol.intern('def')
 SymLoop = Symbol.intern('loop')
 SymLet = Symbol.intern('let')
 SymQuote = Symbol.intern('quote')
-
-
+SymIf = Symbol.intern('if')
+SymCond = Symbol.intern('cond')
