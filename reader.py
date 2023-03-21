@@ -83,7 +83,7 @@ class Reader:
         ch = self.getc()
 
         if ch == None:
-            return None  # @TODO correctly
+            return None
 
         if ch in ['+', '-']:
             return self.read_signed(ch)

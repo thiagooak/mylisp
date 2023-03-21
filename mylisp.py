@@ -79,8 +79,19 @@ def add(env, *args):
     return result
 
 
-def equal(env, first, second):
-    return first == second
+def equal(env, *args):
+    result = True
+
+    if not args:
+        return result
+
+    first = args[0]
+    for i in range(1, len(args)):
+        result = first == args[i]
+        if not result:
+            return result
+
+    return result
 
 
 def eval_value(env, v):
@@ -131,6 +142,12 @@ def eval_value(env, v):
                 return eval_value(env, v[2])
 
             return eval_value(env, v[3])
+
+        if v[0] == sym.SymCond:
+            for i in range(1, len(v), 2):
+                if (eval_value(env, v[i])):
+                    return eval_value(env, v[i+1])
+            return None
 
         resolved = list(map(lambda p:  eval_value(env, p), v))
 
