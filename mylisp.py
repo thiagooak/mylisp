@@ -4,7 +4,6 @@ import sys
 import sym
 import core as c
 import eval as e
-import reader as r
 import interop
 
 
