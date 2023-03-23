@@ -43,6 +43,9 @@ def _eval_special_forms(env, v):
     if v[0] == sym.SymLambda:
         return c.Lambda(env, v[1], v[2])
 
+    if v[0] == sym.SymDefun:
+        return eval_value(env, [sym.SymDef, v[1], [sym.SymLambda, v[2], v[3]]])
+
     return None
 
 
