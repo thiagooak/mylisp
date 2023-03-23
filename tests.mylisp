@@ -2,6 +2,3 @@
 (add2 1 2)
 ((lambda (a b) (+ a b)) 10 20)
 ((lambda () (+ 100 200)))
-
-(defun add3 (a b) (+ a b))
-(add3 1000 2000)
