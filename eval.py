@@ -1,5 +1,6 @@
 import sym
 import core as c
+import values
 
 
 def _eval_special_forms(env, v):
@@ -41,7 +42,7 @@ def _eval_special_forms(env, v):
         return None
 
     if v[0] == sym.SymLambda:
-        return c.Lambda(env, v[1], v[2])
+        return values.Lambda(env, v[1], v[2])
 
     return None
 
@@ -59,6 +60,10 @@ def eval_value(env, v):
         if v in env:
             return env[v]
         return sym.SymbolNotFoundError(v)
+
+    if t == values.Vector:
+        resolved = list(map(lambda p:  eval_value(env, p), v))
+        return values.Vector(resolved)
 
     if t == list:
         special_form = _eval_special_forms(env, v)
