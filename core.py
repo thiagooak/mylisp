@@ -3,6 +3,12 @@ import eval as e
 import reader as r
 
 
+def tron(env):
+    env[sym.SymTrace] = True
+
+def troff(env):
+    env[sym.SymTrace] = False
+
 def to_string(v):
     t = type(v)
 
