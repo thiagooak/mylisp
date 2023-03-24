@@ -48,6 +48,9 @@ def _eval_special_forms(env, v):
 
 
 def eval_value(env, v):
+    if env[sym.SymTrace]:
+        print("Trace:", v)
+
     t = type(v)
 
     if t == int:
