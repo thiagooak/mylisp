@@ -4,6 +4,7 @@ import sys
 import sym
 import core as c
 import eval as e
+import reader as r
 import interop
 
 
@@ -19,6 +20,7 @@ setenv(Env, '=', c.equal)
 setenv(Env, 'read', c.read)
 setenv(Env, 'eval', e.eval_value)
 setenv(Env, 'print', c.print_me)
+setenv(Env, 'init-cmd-history', r.ConsoleReader.init_history)
 setenv(Env, 'import', interop.do_import)
 setenv(Env, '!', interop.bang)
 setenv(Env, '.', interop.dot)

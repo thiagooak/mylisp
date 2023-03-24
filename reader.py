@@ -6,15 +6,6 @@ import atexit
 import sym
 import values
 
-def read_history():
-    if path.isfile('.tlisp.history'):
-        readline.read_history_file('.tlisp.history')
-
-
-def write_history():
-    readline.write_history_file('.tlisp.history')
-
-
 class Reader:
     def __init__(self):
         self.buffer = ''
@@ -108,17 +99,15 @@ class Reader:
 
 class ConsoleReader(Reader):
     def read_history():
-        print("reading history")
-        if path.isfile('.tlisp.history'):
-            readline.read_history_file('.tlisp.history')
+        if path.isfile('.mylisp.history'):
+            readline.read_history_file('.mylisp.history')
 
     def write_history():
-        print("writing history")
-        readline.write_history_file('.tlisp.history')
+        readline.write_history_file('.mylisp.history')
 
     def init_history(env):
-        read_history()
-        atexit.register(write_history)
+        ConsoleReader.read_history()
+        atexit.register(ConsoleReader.write_history)
 
     def __init__(self, prompt='>> '):
         super().__init__()
