@@ -4,7 +4,7 @@ import readline
 import os.path as path
 import atexit
 import sym
-
+import values
 
 def read_history():
     if path.isfile('.tlisp.history'):
@@ -43,8 +43,8 @@ class Reader:
     def read_sym(self, ch):
         result = ch
         ch = self.getc()
-        while ch and (not ch.isspace()):
-            if ch == '(' or ch == ')' or ch == "\n":
+        while ch:
+            if ch in "()[]\n\t ":
                 break
             result += ch
             ch = self.getc()
@@ -65,7 +65,7 @@ class Reader:
             ch = self.getc()
         self.getc(ch)
 
-    def read_collection(self, end_ch):
+    def read_collection(self, end_ch, result_class):
         result = []
         self.skip_ws()
         ch = self.getc()
@@ -75,7 +75,7 @@ class Reader:
             result.append(value)
             self.skip_ws()
             ch = self.getc()
-        return result
+        return result_class(result)
 
     def read_value(self):
         result = None
@@ -92,10 +92,10 @@ class Reader:
             return self.read_number(ch)
 
         if ch == '(':
-            return self.read_collection(')')
+            return self.read_collection(')', list)
 
         if ch == '[':
-            return self.read_collection(']')
+            return self.read_collection(']', values.Vector)
 
         if ch == "'":
             return [sym.SymQuote, self.read_value()]
