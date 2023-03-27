@@ -1,5 +1,5 @@
-"MyLISP: I know how to evaluate a few things."
-"MyLISP: Make me smarter!"
+(print "MyLISP: I know how to evaluate a few things.")
+(print "MyLISP: Make me smarter!")
 
 (init-cmd-history)
 (loop (print (eval (read))))
