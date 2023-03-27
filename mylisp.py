@@ -29,6 +29,7 @@ setenv(Env, 'tron', c.tron)
 setenv(Env, 'troff', c.troff)
 setenv(Env, '!', interop.bang)
 setenv(Env, '.', interop.dot)
+setenv(Env, '.!', interop.dot_bang)
 
 
 def main() -> int:

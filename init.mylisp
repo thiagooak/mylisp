@@ -3,10 +3,8 @@
 (def slurp 
   (lambda [path]
     (let [f (! builtins/open path)
-          read-f (. f "read") 
-          text (! read-f)
-          close-f (. f "close")]
-        (! close-f)
+          text (.! f ["read"])]
+        (.! f ["close"])
         text)))
 
 (def len (lambda [thing] (! builtins/len thing)))
