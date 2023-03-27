@@ -14,7 +14,7 @@ def do_import(env, mod_name):
         result[name] = getattr(m, n)
 
     env.update(result)
-    return result.keys()
+    return mod_name
 
 
 def bang(env, f, *args):

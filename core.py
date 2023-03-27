@@ -32,7 +32,7 @@ def to_string(v):
 
 def source(env, path):
     reader = r.FileReader(path)
-    repl(env, reader)
+    repl(env, reader, False)
 
 
 def read(env):
@@ -63,12 +63,14 @@ def loop(env, v):
         (e.eval_value(env, v))
 
 
-def repl(env, reader):
+def repl(env, reader, print_result=True):
     while True:
         x = reader.read_value()
         if x == None:
             break
-        print(to_string(e.eval_value(env, x)))
+        result = e.eval_value(env, x)
+        if print_result:
+            print(to_string(result))
 
 
 def implicit_do(env, exprs):
