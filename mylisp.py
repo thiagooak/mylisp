@@ -29,9 +29,12 @@ setenv(Env, 'tron', c.tron)
 setenv(Env, 'troff', c.troff)
 setenv(Env, '!', interop.bang)
 setenv(Env, '.', interop.dot)
+setenv(Env, '.!', interop.dot_bang)
 
 
 def main() -> int:
+    c.source(Env, "./init.mylisp")
+
     if (len(sys.argv) == 2):
         c.source(Env, sys.argv[1])
         return 0

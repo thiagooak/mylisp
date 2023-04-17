@@ -1,7 +1,6 @@
 import importlib as il
 import sym
 
-
 def do_import(env, mod_name):
     """Import a Python module full of native functions
        into the given env. Each native function is
@@ -14,7 +13,7 @@ def do_import(env, mod_name):
         result[name] = getattr(m, n)
 
     env.update(result)
-    return result.keys()
+    return mod_name
 
 
 def bang(env, f, *args):
@@ -29,3 +28,12 @@ def dot(env, obj, *names):
     for n in names:
         obj = getattr(obj, str(n))
     return obj
+
+def dot_bang(env, obj, names, *args):
+    """Given a form that looks like (. py-object [field1 field2 ...] arg1 arg2 ..)
+    drill down into the object attributes then call the resulting method with
+    the arguments given."""
+    method = None
+    for n in names:
+        method = getattr(obj, str(n))
+    return method(*args)
