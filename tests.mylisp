@@ -1,4 +1,0 @@
-(def add2 (lambda (a b) (+ a b)))
-(add2 1 2)
-((lambda (a b) (+ a b)) 10 20)
-((lambda () (+ 100 200)))
