@@ -1,3 +1,6 @@
+(def t (lambda (f r) (= (f) r)))
+
+(t (lambda () (1)) 1)
 (def add2 (lambda (a b) (+ a b)))
 (add2 1 2)
 ((lambda (a b) (+ a b)) 10 20)
