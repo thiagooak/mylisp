@@ -1,5 +1,5 @@
 Run
-`python3 -i mylisp.py repl`
+`python -i mylisp.py`
 
 Run Tests
-`python3 -m unittest`
+`python -m unittest`

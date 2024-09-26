@@ -1,8 +1,13 @@
 from symbol import Symbol
 from list import List, to_lisp_list
+from streams import EOF, ConsoleCharStream
 import re
-from consolecharstream import ConsoleCharStream
-from charstream import EOF
+
+LEFT_PAREN_SYM = Symbol('(')
+RIGHT_PAREN_SYM = Symbol(')')
+NONE_SYM = Symbol('None')
+TRUE_SYM = Symbol('True')
+FALSE_SYM = Symbol('False')
 
 def skip_comment(ch_stream) -> None:
     # Skip the semicolon.
@@ -76,12 +81,6 @@ def read_simple_value(ch_stream) -> object:
         value = read_number_or_symbol(ch_stream)
     return value
 
-LEFT_PAREN_SYM = Symbol('(')
-RIGHT_PAREN_SYM = Symbol(')')
-NONE_SYM = Symbol('None')
-TRUE_SYM = Symbol('True')
-FALSE_SYM = Symbol('False')
-
 def read_list(ch_stream) -> List:
     result = []
     value = read_value(ch_stream)
@@ -107,16 +106,3 @@ def read_value(ch_stream) -> object:
         value = read_list(ch_stream)
 
     return value
-
-def read_print_loop(cs):
-    # Read and print each value until the user is done.
-    # Call this our RPL.
-    while True:
-        value = read_value(cs)
-        if value == EOF:
-            break
-        # If this were a real REPL we would evaluate the value here.
-        print(value)
-
-    # We are going interactive! Here we are letting the prompt default to 'mylisp> '.
-    read_print_loop(ConsoleCharStream())

@@ -1,5 +1,5 @@
 import unittest
-from charstream import CharStream, EOF
+from streams import CharStream, EOF
 
 class TestCharStream(unittest.TestCase):
 

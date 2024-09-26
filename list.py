@@ -55,5 +55,5 @@ def to_python_list(lisp_list):
     result = []
     while lisp_list:
         result.append(l_list.first())
-    l_list = l_list.rest()
+        l_list = l_list.rest()
     return result

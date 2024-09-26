@@ -1,5 +1,5 @@
 import unittest
-from list import List, to_lisp_list, to_python_list
+from list import List, to_lisp_list
 
 class TestList(unittest.TestCase):
 

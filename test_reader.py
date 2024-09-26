@@ -1,6 +1,6 @@
 import unittest
 from symbol import Symbol
-from charstream import CharStream, EOF
+from streams import CharStream, EOF
 from reader import read_value
 from list import to_lisp_list
 
