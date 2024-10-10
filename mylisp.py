@@ -3,7 +3,6 @@ from streams import ConsoleCharStream
 from reader import read_value, EOF
 from list import List, to_lisp_list
 
-
 def ml_print(_environment, args):
     while args:
         if args.rest():
@@ -39,6 +38,25 @@ SYM_DEF = Symbol('def')
 SYM_QUOTE = Symbol('quote')
 SYM_IF = Symbol('if')
 SYM_WHILE = Symbol('while')
+SYM_LET = Symbol('let')
+SYM_FOR = Symbol('for')
+SYM_DEFN = Symbol('defn')
+SYM_LAMBDA = Symbol('lambda')
+
+class Lambda:
+    def __init__(self, env, params, body):
+        self.env = env
+        self.params = params
+        self.body = body
+
+    def __call__(self, _env, args):
+        local_env = make_env(self.env)
+        params = self.params
+        while args:
+            local_env[params.first()] = args.first()
+            params = params.rest()
+            args = args.rest()
+        return eval_value(local_env, self.body)
 
 def eval_list(env, lst):
     verb = lst.first()
@@ -67,6 +85,29 @@ def eval_list(env, lst):
         result = None
         while eval_value(env, condition):
             result = eval_value(env, body)
+    elif verb == SYM_LET:
+        bindings = lst.second()
+        body = lst.third()
+        local_env = make_env(env)
+        while bindings:
+            name = bindings.first()
+            value = bindings.second()
+            local_env[name] = eval_value(local_env, value)
+            bindings = bindings.rest().rest()
+        result = eval_value(local_env, body)
+    elif verb == SYM_FOR:
+        raise Exception("Not implemented")
+    elif verb == SYM_LAMBDA:
+        params = lst.second()
+        body = lst.third()
+        result = Lambda(env, params, body)
+    elif verb == SYM_DEFN:
+        name = lst.second()
+        params = lst.third()
+        body = lst.fourth()
+        f = Lambda(env, params, body)
+        env[name] = f
+        result = name
     else:
         evaled_lst = eval_items(env, lst)
         f = evaled_lst.first()
@@ -75,16 +116,13 @@ def eval_list(env, lst):
     return result
 
 
-# This is the initial MyLisp version of eval.
-# This version is just a stub that returns the value unchanged.
 def eval_value(env, value):
     if isinstance(value, Symbol):
-        return env[value]
+        return lookup(env, value)
     elif isinstance(value, List):
         return eval_list(env, value)
     return value
 
-# Finally, a real REPL.
 def repl(env, stream):
     value = read_value(stream)
     while value != EOF:
@@ -123,25 +161,40 @@ def ml_cons(environment, args):
 def ml_dir(environment, args):
     return to_lisp_list(environment.keys())
 
-def create_env():
-    return {
-        Symbol('language'): 'MyLisp',
-        Symbol('version'): 1,
-        Symbol('print'): ml_print,
-        Symbol('+'): ml_add,
-        Symbol('=='): ml_equals,
-        Symbol('and'): ml_and,
-        Symbol('first'): ml_first,
-        Symbol('rest'): ml_rest,
-        Symbol('cons'): ml_cons,
-        Symbol('dir'): ml_dir
-        # What would you do here for -, *, /, <, <=, >, >=, or, xor and not?
-    }
+SYM_PARENT = Symbol('*parent*')
+
+def make_env(parent=None):
+    return {SYM_PARENT: parent}
+
+def lookup(env, s):
+    if s in env:
+        return env[s]
+
+    parent = env[SYM_PARENT]
+    if parent:
+        return lookup(parent, s)
+
+    raise Exception(f'Symbol not found in environment: {s}')
+
+def root_env():
+    env = make_env()
+    env[Symbol('language')] = 'MyLisp'
+    env[Symbol('version')] = 1
+    env[Symbol('print')] = ml_print
+    env[Symbol('+')] = ml_add
+    env[Symbol('==')] = ml_equals
+    env[Symbol('and')] = ml_and
+    env[Symbol('first')] = ml_first
+    env[Symbol('rest')] = ml_rest
+    env[Symbol('cons')] = ml_cons
+    env[Symbol('dir')] = ml_dir
+    # What would you do here for -, *, /, <, <=, >, >=, or, xor and not?
+    return env
 
 # Set up the environment dictionary and pass it to repl.
 # Add a couple of predefined bindings while we are at it.
 if __name__ == '__main__':
-    environment = create_env()
+    environment = root_env()
     stream = ConsoleCharStream()
     repl(environment, stream)
 
